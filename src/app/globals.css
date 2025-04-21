@@ -1,23 +1,34 @@
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #ffffff; /* Light background */
+  --foreground: #171717; /* Dark text */
+  --primary-amber: #f59e0b; /* Amber 500 */
+  --secondary-cyan: #06b6d4; /* Cyan 500 */
+  --accent-yellow: #facc15; /* Yellow 400 */
+  --neutral-dark: #000000; /* Black for borders/shadows */
+  --neutral-light: #ffffff; /* White for card backgrounds etc. */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* Dark theme removed as per request */
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Comic Neue', Arial, Helvetica, sans-serif;
+}
+
+.comic-title {
+  font-family: 'Bangers', system-ui;
+  letter-spacing: 2px;
+}
+
+.comic-shadow {
+  filter: drop-shadow(4px 4px 0px #000);
 }
 
 @layer utilities {
