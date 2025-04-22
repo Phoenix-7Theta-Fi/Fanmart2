@@ -1,8 +1,7 @@
 'use client';
 
-'use client';
-
-import { useState } from 'react'; // Import useState
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 // Removed useEffect, createClient as they are no longer needed for this static version
 // import { useEffect } from 'react';
@@ -13,6 +12,7 @@ type SectionName = 'hotTopics' | 'events' | 'fanTheories' | 'fanPage' | 'comicSu
 
 function DashboardContent() {
   const [activeSection, setActiveSection] = useState<SectionName>(null); // Single state to manage active section
+  const router = useRouter();
 
   // --- Placeholder Data ---
   const hotTopics = [
@@ -71,6 +71,10 @@ function DashboardContent() {
     };
   };
 
+  const handleTopicClick = (topicId: number) => {
+    router.push(`/hot-topics/${topicId}`);
+  };
+
   return (
     // Using a very light yellow from the theme's accent color palette
     <div className="min-h-screen bg-yellow-50 p-4 md:p-8"> 
@@ -98,23 +102,23 @@ function DashboardContent() {
             {/* Heading removed as per request */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8"> 
               {hotTopics.map((topic) => (
-                <div 
-                key={topic.id}
-                // Card style using theme variables for background, border, and shadow
-                className="bg-[var(--neutral-light)] p-6 rounded-lg border-2 border-[var(--neutral-dark)] shadow-[4px_4px_0px_var(--neutral-dark)] hover:shadow-[6px_6px_0px_var(--neutral-dark)] transition-shadow duration-200 cursor-pointer transform hover:-translate-y-1" 
-              >
-                <span className={`inline-block ${getCategoryClasses(topic.color)} font-semibold px-3 py-1 rounded-full text-sm mb-4 border`}>
-                  {topic.category}
-                </span>
-                <h3 
-                  className="text-xl font-semibold text-[var(--foreground)] mb-2 hover:text-[var(--secondary-cyan)] transition-colors duration-150"
+                <div
+                  key={topic.id}
+                  onClick={() => handleTopicClick(topic.id)}
+                  className="bg-[var(--neutral-light)] p-6 rounded-lg border-2 border-[var(--neutral-dark)] shadow-[4px_4px_0px_var(--neutral-dark)] hover:shadow-[6px_6px_0px_var(--neutral-dark)] transition-shadow duration-200 cursor-pointer transform hover:-translate-y-1"
                 >
-                  {topic.title}
-                </h3>
-                <p className="text-gray-600 text-sm font-medium">
-                  💬 {topic.comments} Comments
-                </p>
-              </div>
+                  <span className={`inline-block ${getCategoryClasses(topic.color)} font-semibold px-3 py-1 rounded-full text-sm mb-4 border`}>
+                    {topic.category}
+                  </span>
+                  <h3 
+                    className="text-xl font-semibold text-[var(--foreground)] mb-2 hover:text-[var(--secondary-cyan)] transition-colors duration-150"
+                  >
+                    {topic.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm font-medium">
+                    💬 {topic.comments} Comments
+                  </p>
+                </div>
               ))}
             </div>
           </div>
