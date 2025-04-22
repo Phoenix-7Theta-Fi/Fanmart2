@@ -83,6 +83,12 @@ export default function Navbar() {
               Profile
             </Link>
           )}
+          <Link 
+            href="/users" 
+            className="text-lg font-bold text-black hover:text-cyan-600 transition-colors"
+          >
+            Community
+          </Link>
           {/* Add other links as needed */}
 
           {/* Auth Buttons Area */}
