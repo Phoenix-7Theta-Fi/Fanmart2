@@ -1,18 +1,38 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-// Removed useEffect, createClient as they are no longer needed for this static version
-// import { useEffect } from 'react';
-// import { createClient } from '@/lib/supabase'; 
+import type { Blog } from '@/types/blog';
 
 // Define section names type for state management
-type SectionName = 'hotTopics' | 'events' | 'fanTheories' | 'fanPage' | 'comicSuggestions' | 'blog' | 'artStudio' | 'threads' | 'whatsNew' | null; // Added 'whatsNew'
+type SectionName = 'hotTopics' | 'events' | 'fanTheories' | 'fanPage' | 'comicSuggestions' | 'blog' | 'artStudio' | 'threads' | 'whatsNew' | null;
 
-function DashboardContent() {
+function DashboardPage() {
   const [activeSection, setActiveSection] = useState<SectionName>(null); // Single state to manage active section
   const router = useRouter();
+  const [blogData, setBlogData] = useState<Blog[]>([]);
+  const [blogLoading, setBlogLoading] = useState(true);
+  const [blogError, setBlogError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchBlogs() {
+      try {
+        const response = await fetch('/api/blog');
+        if (!response.ok) {
+          throw new Error('Failed to fetch blogs');
+        }
+        const data = await response.json();
+        setBlogData(data.blogs);
+      } catch (err) {
+        console.error('Error fetching blogs:', err);
+        setBlogError(err instanceof Error ? err.message : 'Failed to fetch blogs');
+      } finally {
+        setBlogLoading(false);
+      }
+    }
+
+    fetchBlogs();
+  }, []);
 
   // --- Placeholder Data ---
   const hotTopics = [
@@ -37,7 +57,6 @@ function DashboardContent() {
   ];
   const fanPageData = [ { id: 1, name: "My Hero Academia Fans", members: 12000, color: "amber" }, { id: 2, name: "Spider-Verse Central", members: 8500, color: "cyan" } ];
   const comicSuggestionsData = [ { id: 1, title: "Reading Order: The Infinity Saga", difficulty: "Medium", color: "amber" }, { id: 2, title: "Underrated Manga Gems You Must Read", genre: "Slice of Life", color: "cyan" } ];
-  const blogData = [ { id: 1, title: "The Evolution of Shojo Manga", author: "AnimeExpert", date: "Apr 20, 2025", color: "amber" }, { id: 2, title: "Why Golden Age Comics Still Matter", author: "ComicHistorian", date: "Apr 18, 2025", color: "cyan" } ];
   const artStudioData = [ { id: 1, title: "My latest Spider-Gwen sketch", artist: "ArtFan123", likes: 500, color: "amber" }, { id: 2, title: "Digital painting of Titan battle", artist: "AnimePainter", likes: 750, color: "cyan" } ];
   const threadsData = [ { id: 1, title: "r/comicbooks - Weekly Pull List Discussion", posts: 300, color: "amber" }, { id: 2, title: "r/anime - What are you watching this season?", posts: 500, color: "cyan" } ];
   const whatsNewData = [ // Added placeholder data for What's New
@@ -198,16 +217,43 @@ function DashboardContent() {
 
         {/* Blog Section */}
         {activeSection === 'blog' && (
-           <div className="w-full">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {blogData.map((post) => (
-                <div key={post.id} className="bg-[var(--neutral-light)] p-6 rounded-lg border-2 border-[var(--neutral-dark)] shadow-[4px_4px_0px_var(--neutral-dark)] hover:shadow-[6px_6px_0px_var(--neutral-dark)] transition-shadow duration-200 cursor-pointer transform hover:-translate-y-1">
-                   <span className={`inline-block ${getCategoryClasses(post.color)} font-semibold px-3 py-1 rounded-full text-sm mb-4 border`}>Blog Post</span>
-                  <h3 className="text-xl font-semibold text-[var(--foreground)] mb-2 hover:text-[var(--secondary-cyan)] transition-colors duration-150">{post.title}</h3>
-                  <p className="text-gray-600 text-sm font-medium">By {post.author} - {post.date}</p>
-                </div>
-              ))}
-            </div>
+          <div className="w-full">
+            {blogLoading ? (
+              // Loading state
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {[1, 2].map((i) => (
+                  <div key={i} className="animate-pulse bg-[var(--neutral-light)] p-6 rounded-lg border-2 border-[var(--neutral-dark)] shadow-[4px_4px_0px_var(--neutral-dark)]">
+                    <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+                    <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                ))}
+              </div>
+            ) : blogError ? (
+              // Error state
+              <div className="text-red-500 p-4 rounded-lg bg-red-50">
+                {blogError}
+              </div>
+            ) : (
+              // Success state
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {blogData.map((post) => (
+                  <div 
+                    key={post.id} 
+                    onClick={() => router.push(`/blog/${post.id}`)}
+                    className="bg-[var(--neutral-light)] p-6 rounded-lg border-2 border-[var(--neutral-dark)] shadow-[4px_4px_0px_var(--neutral-dark)] hover:shadow-[6px_6px_0px_var(--neutral-dark)] transition-shadow duration-200 cursor-pointer transform hover:-translate-y-1"
+                  >
+                    <span className={`inline-block ${getCategoryClasses(post.color)} font-semibold px-3 py-1 rounded-full text-sm mb-4 border`}>Blog Post</span>
+                    <h3 className="text-xl font-semibold text-[var(--foreground)] mb-2 hover:text-[var(--secondary-cyan)] transition-colors duration-150">
+                      {post.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm font-medium">
+                      By {post.author} - {new Date(post.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )} {/* End Blog Section */}
 
@@ -262,5 +308,5 @@ function DashboardContent() {
   );
 }
 
-export default DashboardContent;
-export { DashboardContent as Dashboard };
+export default DashboardPage;
+export { DashboardPage as Dashboard };
